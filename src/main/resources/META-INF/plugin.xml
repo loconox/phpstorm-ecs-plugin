@@ -1,0 +1,50 @@
+<idea-plugin>
+    <id>com.yousign.phpstorm.ecs</id>
+    <name>Easy Coding Standard</name>
+    <vendor>Yousign</vendor>
+
+    <description><![CDATA[
+        Integrates Easy Coding Standard (ECS) as a Quality Tool in PhpStorm.
+        Provides real-time code analysis and inspection using ECS.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.jetbrains.php</depends>
+
+    <extensions defaultExtensionNs="com.jetbrains.php">
+        <tools.quality.type implementation="com.yousign.phpstorm.ecs.EcsQualityToolType"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Services -->
+        <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsBlackList"/>
+        <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsProjectConfiguration"/>
+        <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsConfigurationManager"/>
+        <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsConfigurationBaseManager"/>
+
+        <!-- Real-time code analysis -->
+        <externalAnnotator language="PHP" implementationClass="com.yousign.phpstorm.ecs.EcsAnnotator"/>
+
+        <!-- Inspection -->
+        <localInspection
+                language="PHP"
+                implementationClass="com.yousign.phpstorm.ecs.EcsValidationInspection"
+                displayName="Easy Coding Standard"
+                groupPath="PHP"
+                groupName="Quality tools"
+                shortName="EcsValidationInspection"
+                enabledByDefault="true"
+                level="WEAK WARNING"
+                unfair="true"
+        />
+
+        <!-- Settings page under PHP > Quality Tools -->
+        <projectConfigurable
+                instance="com.yousign.phpstorm.ecs.EcsConfigurable"
+                id="settings.php.quality.tools.ecs"
+                parentId="settings.php.quality.tools"
+                displayName="Easy Coding Standard"
+                nonDefaultProject="true"
+        />
+    </extensions>
+</idea-plugin>
