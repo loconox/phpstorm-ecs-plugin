@@ -17,10 +17,11 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Services -->
+        <applicationService serviceImplementation="com.yousign.phpstorm.ecs.EcsConfigurationManager$EcsAppConfigurationBaseManager"/>
+        <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsConfigurationManager$EcsProjectConfigurationBaseManager"/>
         <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsBlackList"/>
         <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsProjectConfiguration"/>
         <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsConfigurationManager"/>
-        <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsConfigurationBaseManager"/>
 
         <!-- Real-time code analysis -->
         <externalAnnotator language="PHP" implementationClass="com.yousign.phpstorm.ecs.EcsAnnotator"/>
@@ -37,6 +38,9 @@
                 level="WEAK WARNING"
                 unfair="true"
         />
+
+        <!-- Code formatter (Reformat Code action) -->
+        <formattingService implementation="com.yousign.phpstorm.ecs.EcsReformatService"/>
 
         <!-- Settings page under PHP > Quality Tools -->
         <projectConfigurable

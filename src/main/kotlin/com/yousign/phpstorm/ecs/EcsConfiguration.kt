@@ -1,15 +1,22 @@
 package com.yousign.phpstorm.ecs
 
+import com.jetbrains.php.PhpBundle
 import com.jetbrains.php.tools.quality.QualityToolConfiguration
 
 class EcsConfiguration : QualityToolConfiguration {
 
+    private var id: String = PhpBundle.message("local")
     private var toolPath: String = ""
     private var timeout: Int = 30000
     private var interpreterId: String = ""
     private var ecsConfigPath: String = ""
 
-    override fun getId(): String = "ecs"
+    companion object {
+        const val DEFAULT_TOOL_PATH = "vendor/bin/ecs"
+        const val DEFAULT_CONFIG_PATH = "ecs.php"
+    }
+
+    override fun getId(): String = id
 
     override fun getInterpreterId(): String = interpreterId
 
@@ -29,6 +36,7 @@ class EcsConfiguration : QualityToolConfiguration {
 
     override fun clone(): EcsConfiguration {
         val copy = EcsConfiguration()
+        copy.id = this.id
         copy.toolPath = this.toolPath
         copy.timeout = this.timeout
         copy.interpreterId = this.interpreterId

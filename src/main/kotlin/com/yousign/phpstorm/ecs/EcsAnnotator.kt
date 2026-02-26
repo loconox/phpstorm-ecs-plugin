@@ -17,7 +17,25 @@ class EcsAnnotator : QualityToolAnnotator<EcsValidationInspection>() {
         profile: InspectionProfile?,
         project: Project
     ): MutableList<String> {
-        return mutableListOf("check", "--output-format=json")
+        val options = mutableListOf("check", "--output-format=json", "--no-progress-bar")
+
+        val configPath = getEcsConfigPath(project)
+        if (configPath.isNotEmpty()) {
+            options.add("--config=$configPath")
+        }
+
+        return options
+    }
+
+    private fun getEcsConfigPath(project: Project): String {
+        val config = EcsConfigurationManager.getInstance(project).localSettings
+        val configPath = config.getEcsConfigPath()
+        if (configPath.isNotEmpty()) {
+            return configPath
+        }
+        val basePath = project.basePath ?: return ""
+        val defaultConfig = java.io.File(basePath, EcsConfiguration.DEFAULT_CONFIG_PATH)
+        return if (defaultConfig.exists()) defaultConfig.absolutePath else ""
     }
 
     override fun createMessageProcessor(
