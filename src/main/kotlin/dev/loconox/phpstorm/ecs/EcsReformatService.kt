@@ -4,7 +4,10 @@ import com.intellij.formatting.service.AsyncDocumentFormattingService
 import com.intellij.formatting.service.AsyncFormattingRequest
 import com.intellij.formatting.service.FormattingService
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import com.intellij.util.EnvironmentUtil
+import com.jetbrains.php.config.PhpProjectConfigurationFacade
 import com.jetbrains.php.lang.PhpLanguage
 import com.jetbrains.php.tools.quality.QualityToolExternalFormatter
 import java.io.File
@@ -43,14 +46,25 @@ class EcsReformatService : AsyncDocumentFormattingService() {
             if (defaultConfig.exists()) defaultConfig.absolutePath else ""
         }
 
-        return EcsFormattingTask(request, resolvedToolPath, ecsConfigPath, basePath, config.timeout)
+        val phpPath = resolvePhpPath(project)
+
+        return EcsFormattingTask(request, resolvedToolPath, ecsConfigPath, basePath, config.timeout, phpPath)
     }
 
     override fun getNotificationGroupId(): String = "PHP External Quality Tools"
 
     override fun getName(): String = "Easy Coding Standard"
 
-    private fun resolveToolPath(project: com.intellij.openapi.project.Project): String? {
+    private fun resolvePhpPath(project: Project): String? {
+        return try {
+            PhpProjectConfigurationFacade.getInstance(project).interpreter?.pathToPhpExecutable
+        } catch (e: Exception) {
+            LOG.warn("ECS format: could not resolve PHP interpreter: ${e.message}")
+            null
+        }
+    }
+
+    private fun resolveToolPath(project: Project): String? {
         val config = EcsConfigurationManager.getInstance(project).localSettings
         val toolPath = config.toolPath
         val basePath = project.basePath
@@ -70,7 +84,8 @@ class EcsReformatService : AsyncDocumentFormattingService() {
         private val toolPath: String,
         private val configPath: String,
         private val workingDir: String,
-        private val timeout: Int
+        private val timeout: Int,
+        private val phpPath: String?
     ) : FormattingTask {
 
         @Volatile
@@ -89,7 +104,11 @@ class EcsReformatService : AsyncDocumentFormattingService() {
             try {
                 tempFile.writeText(request.documentText)
 
-                val command = mutableListOf(toolPath, "check", "--fix", "--no-progress-bar", "-n")
+                val command = mutableListOf<String>()
+                if (phpPath != null) {
+                    command.add(phpPath)
+                }
+                command.addAll(listOf(toolPath, "check", "--fix", "--no-progress-bar", "-n"))
                 if (configPath.isNotEmpty()) {
                     command.add("--config=$configPath")
                 }
@@ -101,6 +120,9 @@ class EcsReformatService : AsyncDocumentFormattingService() {
                 val processBuilder = ProcessBuilder(command)
                     .directory(File(workingDir))
                     .redirectErrorStream(true)
+
+                // Inherit the user's shell environment (includes PATH with php)
+                processBuilder.environment().putAll(EnvironmentUtil.getEnvironmentMap())
 
                 val startTime = System.currentTimeMillis()
                 process = processBuilder.start()

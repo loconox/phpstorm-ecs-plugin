@@ -1,4 +1,4 @@
-<idea-plugin>
+<idea-plugin require-restart="false">
     <id>dev.loconox.phpstorm.ecs</id>
     <name>Easy Coding Standard</name>
     <vendor>loconox</vendor>
