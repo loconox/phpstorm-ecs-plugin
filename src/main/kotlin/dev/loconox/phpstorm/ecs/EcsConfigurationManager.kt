@@ -1,6 +1,7 @@
 package dev.loconox.phpstorm.ecs
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
@@ -10,6 +11,7 @@ import com.jetbrains.php.tools.quality.QualityToolConfigurationManager
 import com.jetbrains.php.tools.quality.QualityToolType
 import org.jdom.Element
 
+@Service(Service.Level.PROJECT)
 class EcsConfigurationManager(private val project: Project) :
     QualityToolConfigurationManager<EcsConfiguration>(project) {
 
@@ -19,14 +21,13 @@ class EcsConfigurationManager(private val project: Project) :
     }
 
     override fun getLocalSettings(): EcsConfiguration {
-        @Suppress("UNCHECKED_CAST")
-        val settings = super.getLocalSettings() as? EcsConfiguration ?: EcsConfiguration()
+        val settings = super.getLocalSettings() ?: EcsConfiguration()
 
         // Resolve relative/empty tool path to absolute so the QualityToolAnnotator framework can find the binary
-        if (settings.toolPath.isNullOrBlank() || !java.io.File(settings.toolPath).isAbsolute) {
+        if (settings.toolPath.isBlank() || !java.io.File(settings.toolPath).isAbsolute) {
             val basePath = project.basePath
             if (basePath != null) {
-                val candidate = if (settings.toolPath.isNullOrBlank())
+                val candidate = if (settings.toolPath.isBlank())
                     java.io.File(basePath, EcsConfiguration.DEFAULT_TOOL_PATH)
                 else
                     java.io.File(basePath, settings.toolPath)
@@ -40,6 +41,7 @@ class EcsConfigurationManager(private val project: Project) :
         return settings
     }
 
+    @Service(Service.Level.APP)
     @State(name = "EcsAppConfiguration", storages = [Storage("ecs.xml")])
     class EcsAppConfigurationBaseManager : QualityToolConfigurationBaseManager<EcsConfiguration>() {
         override fun getOldStyleToolPathName(): String = "ecs"
@@ -50,6 +52,7 @@ class EcsConfigurationManager(private val project: Project) :
         override fun getQualityToolType(): QualityToolType<EcsConfiguration> = EcsQualityToolType()
     }
 
+    @Service(Service.Level.PROJECT)
     @State(name = "EcsProjectConfiguration2", storages = [Storage("ecs.xml")])
     class EcsProjectConfigurationBaseManager : QualityToolConfigurationBaseManager<EcsConfiguration>() {
         override fun getOldStyleToolPathName(): String = "ecs"

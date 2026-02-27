@@ -70,8 +70,8 @@ class EcsReformatService : AsyncDocumentFormattingService() {
         val basePath = project.basePath
 
         val toolFile = when {
-            !toolPath.isNullOrBlank() && File(toolPath).isAbsolute -> File(toolPath)
-            !toolPath.isNullOrBlank() && basePath != null -> File(basePath, toolPath)
+            toolPath.isNotBlank() && File(toolPath).isAbsolute -> File(toolPath)
+            toolPath.isNotBlank() && basePath != null -> File(basePath, toolPath)
             basePath != null -> File(basePath, EcsConfiguration.DEFAULT_TOOL_PATH)
             else -> return null
         }

@@ -16,13 +16,6 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Services -->
-        <applicationService serviceImplementation="dev.loconox.phpstorm.ecs.EcsConfigurationManager$EcsAppConfigurationBaseManager"/>
-        <projectService serviceImplementation="dev.loconox.phpstorm.ecs.EcsConfigurationManager$EcsProjectConfigurationBaseManager"/>
-        <projectService serviceImplementation="dev.loconox.phpstorm.ecs.EcsBlackList"/>
-        <projectService serviceImplementation="dev.loconox.phpstorm.ecs.EcsProjectConfiguration"/>
-        <projectService serviceImplementation="dev.loconox.phpstorm.ecs.EcsConfigurationManager"/>
-
         <!-- Real-time code analysis -->
         <externalAnnotator language="PHP" implementationClass="dev.loconox.phpstorm.ecs.EcsAnnotator"/>
 
@@ -30,9 +23,11 @@
         <localInspection
                 language="PHP"
                 implementationClass="dev.loconox.phpstorm.ecs.EcsValidationInspection"
-                displayName="Easy Coding Standard"
+                bundle="messages.EcsBundle"
+                key="inspection.display.name"
                 groupPath="PHP"
-                groupName="Quality tools"
+                groupBundle="messages.EcsBundle"
+                groupKey="inspection.group.name"
                 shortName="EcsValidationInspection"
                 enabledByDefault="true"
                 level="WEAK WARNING"
@@ -43,14 +38,15 @@
         <formattingService implementation="dev.loconox.phpstorm.ecs.EcsReformatService"/>
 
         <!-- Notifications -->
-        <notificationGroup id="ECS" displayType="BALLOON"/>
+        <notificationGroup id="ECS" displayType="BALLOON" bundle="messages.EcsBundle" key="notification.group.ecs"/>
 
         <!-- Settings page under PHP > Quality Tools -->
         <projectConfigurable
                 instance="dev.loconox.phpstorm.ecs.EcsConfigurable"
                 id="settings.php.quality.tools.ecs"
                 parentId="settings.php.quality.tools"
-                displayName="Easy Coding Standard"
+                bundle="messages.EcsBundle"
+                key="configurable.display.name"
                 nonDefaultProject="true"
         />
     </extensions>
