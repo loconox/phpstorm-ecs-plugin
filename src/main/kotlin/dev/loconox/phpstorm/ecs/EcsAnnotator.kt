@@ -1,5 +1,6 @@
-package com.yousign.phpstorm.ecs
+package dev.loconox.phpstorm.ecs
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.codeInspection.InspectionProfile
 import com.jetbrains.php.tools.quality.QualityToolAnnotator
@@ -17,12 +18,24 @@ class EcsAnnotator : QualityToolAnnotator<EcsValidationInspection>() {
         profile: InspectionProfile?,
         project: Project
     ): MutableList<String> {
-        val options = mutableListOf("check", "--output-format=json", "--no-progress-bar")
+        if (!EcsConfigValidator.validate(project)) {
+            LOG.warn("ECS annotator: skipping check for file $filePath — configuration is invalid")
+            return mutableListOf()
+        }
 
+        val config = EcsConfigurationManager.getInstance(project).localSettings
         val configPath = getEcsConfigPath(project)
+
+        val options = mutableListOf("check", "--output-format=json", "--no-progress-bar", "-n")
         if (configPath.isNotEmpty()) {
             options.add("--config=$configPath")
         }
+        if (!filePath.isNullOrBlank()) {
+            options.add(filePath)
+        }
+
+        LOG.info("ECS annotator: executing check for file: $filePath")
+        LOG.info("ECS annotator: tool path: ${config.toolPath}, timeout: ${config.timeout}ms, options: $options")
 
         return options
     }
@@ -45,6 +58,7 @@ class EcsAnnotator : QualityToolAnnotator<EcsValidationInspection>() {
     }
 
     companion object {
+        private val LOG = Logger.getInstance(EcsAnnotator::class.java)
         val INSTANCE = EcsAnnotator()
     }
 }

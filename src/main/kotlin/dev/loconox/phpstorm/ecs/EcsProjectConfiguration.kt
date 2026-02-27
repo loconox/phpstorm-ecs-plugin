@@ -1,4 +1,4 @@
-package com.yousign.phpstorm.ecs
+package dev.loconox.phpstorm.ecs
 
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State

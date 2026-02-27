@@ -1,4 +1,4 @@
-package com.yousign.phpstorm.ecs
+package dev.loconox.phpstorm.ecs
 
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project

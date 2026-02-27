@@ -1,7 +1,7 @@
 <idea-plugin>
-    <id>com.yousign.phpstorm.ecs</id>
+    <id>dev.loconox.phpstorm.ecs</id>
     <name>Easy Coding Standard</name>
-    <vendor>Yousign</vendor>
+    <vendor>loconox</vendor>
 
     <description><![CDATA[
         Integrates Easy Coding Standard (ECS) as a Quality Tool in PhpStorm.
@@ -12,24 +12,24 @@
     <depends>com.jetbrains.php</depends>
 
     <extensions defaultExtensionNs="com.jetbrains.php">
-        <tools.quality.type implementation="com.yousign.phpstorm.ecs.EcsQualityToolType"/>
+        <tools.quality.type implementation="dev.loconox.phpstorm.ecs.EcsQualityToolType"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Services -->
-        <applicationService serviceImplementation="com.yousign.phpstorm.ecs.EcsConfigurationManager$EcsAppConfigurationBaseManager"/>
-        <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsConfigurationManager$EcsProjectConfigurationBaseManager"/>
-        <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsBlackList"/>
-        <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsProjectConfiguration"/>
-        <projectService serviceImplementation="com.yousign.phpstorm.ecs.EcsConfigurationManager"/>
+        <applicationService serviceImplementation="dev.loconox.phpstorm.ecs.EcsConfigurationManager$EcsAppConfigurationBaseManager"/>
+        <projectService serviceImplementation="dev.loconox.phpstorm.ecs.EcsConfigurationManager$EcsProjectConfigurationBaseManager"/>
+        <projectService serviceImplementation="dev.loconox.phpstorm.ecs.EcsBlackList"/>
+        <projectService serviceImplementation="dev.loconox.phpstorm.ecs.EcsProjectConfiguration"/>
+        <projectService serviceImplementation="dev.loconox.phpstorm.ecs.EcsConfigurationManager"/>
 
         <!-- Real-time code analysis -->
-        <externalAnnotator language="PHP" implementationClass="com.yousign.phpstorm.ecs.EcsAnnotator"/>
+        <externalAnnotator language="PHP" implementationClass="dev.loconox.phpstorm.ecs.EcsAnnotator"/>
 
         <!-- Inspection -->
         <localInspection
                 language="PHP"
-                implementationClass="com.yousign.phpstorm.ecs.EcsValidationInspection"
+                implementationClass="dev.loconox.phpstorm.ecs.EcsValidationInspection"
                 displayName="Easy Coding Standard"
                 groupPath="PHP"
                 groupName="Quality tools"
@@ -40,11 +40,14 @@
         />
 
         <!-- Code formatter (Reformat Code action) -->
-        <formattingService implementation="com.yousign.phpstorm.ecs.EcsReformatService"/>
+        <formattingService implementation="dev.loconox.phpstorm.ecs.EcsReformatService"/>
+
+        <!-- Notifications -->
+        <notificationGroup id="ECS" displayType="BALLOON"/>
 
         <!-- Settings page under PHP > Quality Tools -->
         <projectConfigurable
-                instance="com.yousign.phpstorm.ecs.EcsConfigurable"
+                instance="dev.loconox.phpstorm.ecs.EcsConfigurable"
                 id="settings.php.quality.tools.ecs"
                 parentId="settings.php.quality.tools"
                 displayName="Easy Coding Standard"

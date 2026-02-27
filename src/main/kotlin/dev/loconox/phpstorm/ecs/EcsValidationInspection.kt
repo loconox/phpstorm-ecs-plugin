@@ -1,4 +1,4 @@
-package com.yousign.phpstorm.ecs
+package dev.loconox.phpstorm.ecs
 
 import com.jetbrains.php.tools.quality.QualityToolAnnotator
 import com.jetbrains.php.tools.quality.QualityToolValidationInspection

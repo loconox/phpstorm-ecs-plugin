@@ -1,4 +1,4 @@
-package com.yousign.phpstorm.ecs
+package dev.loconox.phpstorm.ecs
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.State
@@ -19,7 +19,8 @@ class EcsConfigurationManager(private val project: Project) :
     }
 
     override fun getLocalSettings(): EcsConfiguration {
-        val settings = super.getLocalSettings()
+        @Suppress("UNCHECKED_CAST")
+        val settings = super.getLocalSettings() as? EcsConfiguration ?: EcsConfiguration()
 
         // Resolve relative/empty tool path to absolute so the QualityToolAnnotator framework can find the binary
         if (settings.toolPath.isNullOrBlank() || !java.io.File(settings.toolPath).isAbsolute) {

@@ -1,8 +1,9 @@
-package com.yousign.phpstorm.ecs
+package dev.loconox.phpstorm.ecs
 
 import com.intellij.formatting.service.AsyncDocumentFormattingService
 import com.intellij.formatting.service.AsyncFormattingRequest
 import com.intellij.formatting.service.FormattingService
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiFile
 import com.jetbrains.php.lang.PhpLanguage
 import com.jetbrains.php.tools.quality.QualityToolExternalFormatter
@@ -12,6 +13,10 @@ import kotlin.io.path.createTempDirectory
 
 class EcsReformatService : AsyncDocumentFormattingService() {
 
+    companion object {
+        private val LOG = Logger.getInstance(EcsReformatService::class.java)
+    }
+
     override fun getFeatures(): Set<FormattingService.Feature> = emptySet()
 
     override fun canFormat(file: PsiFile): Boolean {
@@ -20,6 +25,8 @@ class EcsReformatService : AsyncDocumentFormattingService() {
 
         // Don't interfere if the built-in External Formatter is active
         if (QualityToolExternalFormatter.isEnabled(project)) return false
+
+        if (!EcsConfigValidator.validate(project)) return false
 
         return resolveToolPath(project) != null
     }
@@ -72,6 +79,7 @@ class EcsReformatService : AsyncDocumentFormattingService() {
         override fun run() {
             val ioFile = request.ioFile
             if (ioFile == null) {
+                LOG.warn("ECS format: file is not saved to disk, skipping")
                 request.onError("ECS", "Cannot format: file is not saved to disk")
                 return
             }
@@ -81,28 +89,44 @@ class EcsReformatService : AsyncDocumentFormattingService() {
             try {
                 tempFile.writeText(request.documentText)
 
-                val command = mutableListOf(toolPath, "check", "--fix", "--no-progress-bar")
+                val command = mutableListOf(toolPath, "check", "--fix", "--no-progress-bar", "-n")
                 if (configPath.isNotEmpty()) {
                     command.add("--config=$configPath")
                 }
                 command.add(tempFile.absolutePath)
 
+                LOG.info("ECS format: executing command: ${command.joinToString(" ")}")
+                LOG.info("ECS format: working directory: $workingDir, timeout: ${timeout}ms")
+
                 val processBuilder = ProcessBuilder(command)
                     .directory(File(workingDir))
                     .redirectErrorStream(true)
 
+                val startTime = System.currentTimeMillis()
                 process = processBuilder.start()
+
+                val output = process!!.inputStream.bufferedReader().readText()
                 val finished = process!!.waitFor(timeout.toLong(), TimeUnit.MILLISECONDS)
+                val elapsed = System.currentTimeMillis() - startTime
 
                 if (!finished) {
+                    LOG.warn("ECS format: TIMEOUT after ${elapsed}ms (limit: ${timeout}ms) for file ${ioFile.name}")
+                    LOG.warn("ECS format: process output before timeout: ${output.take(1000)}")
                     process?.destroyForcibly()
                     request.onError("ECS", "ECS format timed out after ${timeout}ms")
                     return
                 }
 
+                val exitCode = process!!.exitValue()
+                LOG.info("ECS format: finished in ${elapsed}ms, exit code: $exitCode, file: ${ioFile.name}")
+                if (output.isNotEmpty()) {
+                    LOG.info("ECS format: process output: ${output.take(1000)}")
+                }
+
                 val formattedText = tempFile.readText()
                 request.onTextReady(formattedText)
             } catch (e: Exception) {
+                LOG.warn("ECS format: exception for file ${ioFile.name}: ${e.message}", e)
                 request.onError("ECS", e.message ?: "Unknown error during formatting")
             } finally {
                 tempFile.delete()
@@ -111,6 +135,7 @@ class EcsReformatService : AsyncDocumentFormattingService() {
         }
 
         override fun cancel(): Boolean {
+            LOG.warn("ECS format: task cancelled, destroying process")
             process?.destroyForcibly()
             return true
         }

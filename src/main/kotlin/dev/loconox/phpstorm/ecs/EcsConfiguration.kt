@@ -1,9 +1,9 @@
-package com.yousign.phpstorm.ecs
+package dev.loconox.phpstorm.ecs
 
 import com.jetbrains.php.PhpBundle
 import com.jetbrains.php.tools.quality.QualityToolConfiguration
 
-class EcsConfiguration : QualityToolConfiguration {
+class EcsConfiguration : QualityToolConfiguration() {
 
     private var id: String = PhpBundle.message("local")
     private var toolPath: String = ""
