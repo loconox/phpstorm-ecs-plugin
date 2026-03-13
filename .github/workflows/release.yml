@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.properties.outputs.version }}
+      filename: ${{ steps.artifact.outputs.filename }}
 
     steps:
       - name: Checkout
@@ -96,6 +97,20 @@ jobs:
       - name: Fetch Sources
         uses: actions/checkout@v4
 
+      # Download the plugin artifact built in the build job
+      - name: Download Plugin Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.filename }}
+          path: ./artifact
+
+      # Re-create the zip from the downloaded artifact
+      - name: Package Plugin Zip
+        shell: bash
+        run: |
+          cd ./artifact
+          zip -r ../plugin.zip ./*
+
       # Remove old release drafts by using the curl request for the available releases with a draft flag
       - name: Remove Old Release Drafts
         env:
@@ -116,7 +131,8 @@ jobs:
             --notes "$(cat << 'EOM'
           ${{ needs.build.outputs.changelog }}
           EOM
-          )"
+          )" \
+            ./plugin.zip#${{ needs.build.outputs.filename }}.zip
 
   # Run Qodana inspections and provide report
   inspectCode:
